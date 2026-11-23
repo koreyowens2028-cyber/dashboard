@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dashboard">
+<title>Dashboard</title>
+<style>
+:root{--bg:#0b0f17;--card:rgba(255,255,255,.055);--line:rgba(255,255,255,.09);--text:#f2f4f8;--dim:#8e97a8;--faint:#5b6475;
+  --accent:#7cc4ff;--accent2:#a78bfa;--good:#5eead4;--warm:#fbbf24;--field:rgba(255,255,255,.06);--scrim:rgba(0,0,0,.55)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);transition:background .8s,color .8s;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;
+  -webkit-user-select:none;user-select:none}
+input,textarea,select{-webkit-user-select:text;user-select:text;font:inherit;color:var(--text);background:var(--field);border:1px solid var(--line);
+  border-radius:12px;padding:11px 13px;font-size:16px;outline:none;width:100%}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+input[type=time]{min-width:0}
+button{font:inherit;color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px;cursor:pointer}
+button:active{transform:scale(.97)}
+button.pri{background:var(--accent);color:var(--bg);border-color:transparent;font-weight:600}
+
+.bg{position:fixed;inset:0;overflow:hidden;z-index:0}
+.blob{position:absolute;width:70vmax;height:70vmax;border-radius:50%;will-change:transform;transition:background 1s}
+.b1{top:-30vmax;left:-20vmax;animation:d1 38s ease-in-out infinite alternate}
+.b2{bottom:-35vmax;right:-25vmax;animation:d2 46s ease-in-out infinite alternate}
+.b3{top:20vmax;left:30vmax;animation:d3 54s ease-in-out infinite alternate}
+@keyframes d1{to{transform:translate(18vmax,12vmax) scale(1.15)}}
+@keyframes d2{to{transform:translate(-16vmax,-10vmax) scale(1.1)}}
+@keyframes d3{to{transform:translate(-20vmax,8vmax) scale(.9)}}
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+.wrap{position:relative;z-index:1;height:100%;display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.1fr) minmax(0,1fr);gap:18px;
+  padding:calc(20px + env(safe-area-inset-top)) 20px 20px}
+.col{display:flex;flex-direction:column;gap:18px;min-height:0}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px 22px;min-height:0;cursor:pointer;
+  opacity:0;transform:translateY(12px);animation:in .8s cubic-bezier(.2,.8,.2,1) forwards;transition:background .8s,border-color .8s}
+.card:active{filter:brightness(1.08)}
+.col:nth-child(2) .card{animation-delay:.1s}.col:nth-child(3) .card{animation-delay:.2s}
+@keyframes in{to{opacity:1;transform:none}}
+.grow{flex:1;display:flex;flex-direction:column}
+.label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chip{letter-spacing:.02em;text-transform:none;font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:20px;padding:3px 10px}
+
+.time{font-size:88px;font-weight:200;letter-spacing:-.03em;line-height:1}
+.time .ap{font-size:24px;font-weight:300;color:var(--dim);margin-left:6px;letter-spacing:0}
+.date{font-size:19px;color:var(--dim);margin-top:8px}
+.secbar{height:3px;border-radius:3px;background:var(--field);margin-top:16px;overflow:hidden}
+.secbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s linear}
+.greet{font-size:17px;margin-top:14px}.greet b{font-weight:600}
+.quote{font-size:14px;color:var(--dim);font-style:italic;line-height:1.45;margin-top:8px;transition:opacity 1s;min-height:20px}
+.gear{position:absolute;top:16px;right:16px;width:30px;height:30px;color:var(--faint)}
+
+.wnow{display:flex;align-items:center;gap:16px}
+.wicon{font-size:56px;line-height:1;animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px)}}
+.wtemp{font-size:54px;font-weight:200;line-height:1}
+.wdesc{font-size:15px;color:var(--dim);margin-top:4px}
+.wmeta{display:flex;gap:14px;margin:14px 0;font-size:14px;color:var(--dim);flex-wrap:wrap}
+.hours{display:flex;justify-content:space-between;margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+.hr{text-align:center;font-size:13px;color:var(--dim)}.hr div{font-size:22px;margin:4px 0}.hr span{color:var(--text);font-size:15px}
+
+.status{font-size:21px;font-weight:500;line-height:1.25}
+.status small{display:block;font-size:15px;font-weight:400;color:var(--dim);margin-top:4px}
+.list{margin-top:14px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.row{position:relative;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:12px;overflow:hidden;border:1px solid transparent}
+.row .t{width:76px;flex:none;font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums}
+.row .n{flex:1;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .r{font-size:12px;color:var(--faint)}
+.row.done{opacity:.35}
+.row.now{border-color:var(--accent)}
+.row.now .n{font-weight:600}
+.row .fill{position:absolute;left:0;top:0;bottom:0;background:var(--accent);opacity:.14;transition:width 1s linear}
+.row.next{border:1px dashed var(--line)}
+.shimmer{position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.08) 50%,transparent 70%);transform:translateX(-100%);animation:sh 3.5s ease-in-out infinite}
+@keyframes sh{to{transform:translateX(100%)}}
+.free{margin:auto;text-align:center;color:var(--dim);font-size:17px;line-height:1.6}
+.free div{font-size:52px;margin-bottom:6px;animation:float 5s ease-in-out infinite}
+
+.focus{font-size:17px;font-weight:500;line-height:1.35}
+.focus small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--warm);margin-bottom:6px;font-weight:600}
+.checks{margin-top:12px;display:flex;flex-direction:column;gap:2px;overflow:auto;flex:1;min-height:0}
+.ck{display:flex;align-items:center;gap:12px;padding:7px 6px;border-radius:12px;font-size:15px;line-height:1.3}
+.ck:active{background:var(--field)}
+.box{flex:none;width:24px;height:24px;border-radius:8px;border:1.5px solid var(--faint);display:flex;align-items:center;justify-content:center;transition:all .25s}
+.ck.ok .box{background:var(--good);border-color:var(--good)}
+.ck.ok .box:after{content:"";width:7px;height:12px;border:solid var(--bg);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.ck.ok span{color:var(--faint);text-decoration:line-through}
+.ck.pop .box{animation:pop .35s}
+@keyframes pop{50%{transform:scale(1.25)}}
+.prog{padding-top:12px}
+.ptrack{height:8px;border-radius:8px;background:var(--field);overflow:hidden}
+.ptrack i{display:block;height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,var(--good),var(--accent));transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.ptext{display:flex;justify-content:space-between;font-size:13px;color:var(--dim);margin-top:8px}
+.addrow{display:flex;align-items:center;gap:12px;padding:9px 6px;color:var(--dim);font-size:15px}
+.addrow b{width:24px;height:24px;border-radius:8px;border:1.5px dashed var(--faint);display:flex;align-items:center;justify-content:center;font-weight:400}
+.empty{color:var(--faint);font-size:15px;padding:8px 6px}
+#todoCard .checks{max-height:190px}
+
+.night{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:5;transition:opacity 3s}
+.syncdot{position:fixed;right:10px;bottom:8px;width:7px;height:7px;border-radius:50%;z-index:6;background:transparent;transition:background .5s}
+
+.modal{position:fixed;inset:0;z-index:10;background:var(--scrim);display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.sheet{width:min(760px,100%);max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--bg);border:1px solid var(--line);border-radius:26px;
+  padding:22px 24px 26px;animation:up .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(30px);opacity:.5}}
+.sh{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;position:sticky;top:-22px;background:var(--bg);padding:8px 0;z-index:2}
+.sh h2{font-size:22px;font-weight:600}
+.sub{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:20px 0 10px}
+.erow{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.erow .x{flex:none;width:44px;padding:10px 0;color:var(--dim)}
+.erow.cls input.nm{flex:2.2}.erow.cls input.tm{flex:1.1}.erow.cls input.rm{flex:.8}
+.tabs{display:flex;gap:6px;background:var(--field);padding:4px;border-radius:14px;margin-bottom:6px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--dim);padding:9px}
+.tabs button.on{background:var(--card);color:var(--text);font-weight:600;border:1px solid var(--line)}
+.days{display:flex;gap:6px;flex-wrap:wrap}
+.days button.on{background:var(--accent);color:var(--bg);border-color:transparent;font-weight:600}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.th{padding:0;overflow:hidden;text-align:left;border-radius:16px}
+.th.on{outline:2px solid var(--accent);outline-offset:2px}
+.sw{height:78px;position:relative;overflow:hidden}
+.sw i{position:absolute;border-radius:50%;width:90px;height:90px;filter:blur(6px)}
+.sw u{position:absolute;left:12px;bottom:10px;width:58px;height:34px;border-radius:8px}
+.sw s{position:absolute;right:12px;bottom:12px;width:12px;height:12px;border-radius:50%}
+.th div.nm{padding:9px 12px;font-size:14px}
+.hint{font-size:14px;color:var(--dim);line-height:1.55}
+.hint ol{padding-left:20px}.hint li{margin-bottom:6px}
+.hint code{background:var(--field);padding:1px 6px;border-radius:6px;font-size:13px}
+.hscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.hcell{flex:none;width:62px;text-align:center;padding:10px 0;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--dim)}
+.hcell div{font-size:22px;margin:5px 0}.hcell span{font-size:15px;color:var(--text)}
+.drow{display:flex;align-items:center;gap:14px;padding:12px 4px;border-bottom:1px solid var(--line);font-size:16px}
+.drow .dn{width:92px}.drow .di{font-size:24px;width:34px;text-align:center}.drow .dp{width:52px;font-size:13px;color:var(--accent)}
+.drow .lo{width:40px;text-align:right;color:var(--dim)}.drow .hi{width:40px}
+.rbar{flex:1;height:6px;border-radius:6px;background:var(--field);position:relative}
+.rbar i{position:absolute;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--warm))}
+.res button{display:block;width:100%;text-align:left;margin-top:6px}
+.row2{display:flex;gap:10px}.row2>*{flex:1}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+@media (orientation:portrait) and (min-width:701px){
+  .wrap{grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr}
+  .col:first-child{grid-column:1/3;flex-direction:row}.col:first-child .card{flex:1}
+}
+@media (max-width:700px){
+  html,body{overflow:auto;height:auto}
+  .wrap{display:flex;flex-direction:column;height:auto;padding:calc(16px + env(safe-area-inset-top)) 14px 30px;gap:14px}
+  .col{gap:14px}.time{font-size:68px}
+  .modal{padding:0;align-items:flex-end}.sheet{border-radius:24px 24px 0 0;max-height:92%}
+  .erow.cls{flex-wrap:wrap}.erow.cls input.nm{flex:1 1 100%}
+  .drow .dn{width:60px}.drow .dp{display:none}
+}
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob b1" id="b1"></div><div class="blob b2" id="b2"></div><div class="blob b3" id="b3"></div></div>
+<canvas id="fx"></canvas>
+
+<div class="wrap" id="wrap">
+  <div class="col">
+    <div class="card" data-open="settings">
+      <svg class="gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      <div class="time" id="time">--:--</div>
+      <div class="date" id="date"></div>
+      <div class="secbar"><i id="sec"></i></div>
+      <div class="greet" id="greet"></div>
+      <div class="quote" id="quote"></div>
+    </div>
+    <div class="card grow" data-open="weather">
+      <div class="label"><span id="place">Weather</span><span class="chip">7 days ›</span></div>
+      <div class="wnow"><div class="wicon" id="wicon">·</div><div><div class="wtemp" id="wtemp">--°</div><div class="wdesc" id="wdesc">Loading…</div></div></div>
+      <div class="wmeta" id="wmeta"></div>
+      <div class="hours" id="hours"></div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card grow" data-open="schedule">
+      <div class="label"><span id="dayname">Today</span><span class="chip">Edit ›</span></div>
+      <div class="status" id="status"></div>
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card grow" data-open="business">
+      <div class="label"><span id="btitle"></span><span class="chip">Edit ›</span></div>
+      <div class="focus" id="focus"></div>
+      <div class="checks" id="goals"></div>
+      <div class="prog"><div class="ptrack"><i id="pbar"></i></div><div class="ptext"><span id="ptext"></span><span>Resets Monday</span></div></div>
+    </div>
+    <div class="card" id="todoCard" data-open="todos">
+      <div class="label"><span>To-do</span><span class="chip">Edit ›</span></div>
+      <div class="checks" id="todos"></div>
+    </div>
+  </div>
+</div>
+<div class="night" id="night"></div>
+<div class="syncdot" id="syncdot"></div>
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script>
+/* ============ Themes ============ */
+const D = {card:"rgba(255,255,255,.055)",line:"rgba(255,255,255,.09)",text:"#f2f4f8",dim:"#8e97a8",faint:"#5b6475",field:"rgba(255,255,255,.06)",scrim:"rgba(0,0,0,.55)"};
+const L = {card:"rgba(255,255,255,.62)",line:"rgba(15,23,42,.09)",text:"#141922",dim:"#5b6678",faint:"#98a2b3",field:"rgba(15,23,42,.05)",scrim:"rgba(20,25,35,.35)"};
+const THEMES = [
+ {id:"midnight",name:"Midnight",g:"Space",v:{...D,bg:"#0b0f17",accent:"#7cc4ff",accent2:"#a78bfa",good:"#5eead4",warm:"#fbbf24"},blobs:["rgba(56,120,255,.35)","rgba(167,139,250,.30)","rgba(45,212,191,.20)"],fx:"stars"},
+ {id:"nebula",name:"Nebula",g:"Space",v:{...D,bg:"#0d0816",accent:"#f0abfc",accent2:"#818cf8",good:"#86efac",warm:"#fda4af"},blobs:["rgba(217,70,239,.30)","rgba(99,102,241,.32)","rgba(244,114,182,.18)"],fx:"stars"},
+ {id:"deepspace",name:"Deep space",g:"Space",v:{...D,bg:"#030407",card:"rgba(255,255,255,.045)",accent:"#e5e7eb",accent2:"#93c5fd",good:"#a7f3d0",warm:"#fde68a"},blobs:null,fx:"starfield"},
+ {id:"aurora",name:"Aurora",g:"Space",v:{...D,bg:"#050d12",accent:"#6ee7b7",accent2:"#67e8f9",good:"#6ee7b7",warm:"#fcd34d"},blobs:["rgba(16,185,129,.30)","rgba(6,182,212,.25)","rgba(139,92,246,.18)"],fx:"stars"},
+ {id:"rainfall",name:"Rainfall",g:"Rain",v:{...D,bg:"#0e1318",accent:"#93c5fd",accent2:"#a5b4fc",good:"#5eead4",warm:"#fcd34d"},blobs:["rgba(71,85,105,.35)","rgba(30,64,175,.18)",null],fx:"rain",fc:"rgba(170,190,215,.35)"},
+ {id:"storm",name:"Thunderstorm",g:"Rain",v:{...D,bg:"#090b10",accent:"#c4b5fd",accent2:"#93c5fd",good:"#86efac",warm:"#fcd34d"},blobs:["rgba(76,29,149,.22)","rgba(51,65,85,.45)",null],fx:"storm",fc:"rgba(180,190,220,.32)"},
+ {id:"drizzle",name:"Drizzle",g:"Rain",light:1,v:{...L,bg:"#e6ebf0",accent:"#2563eb",accent2:"#7c3aed",good:"#0d9488",warm:"#b45309"},blobs:["rgba(148,163,184,.40)","rgba(191,219,254,.6)",null],fx:"rain",fc:"rgba(71,85,105,.28)"},
+ {id:"forest",name:"Forest",g:"Nature",v:{...D,bg:"#08110c",accent:"#86efac",accent2:"#bef264",good:"#86efac",warm:"#fcd34d"},blobs:["rgba(22,101,52,.38)","rgba(77,124,15,.22)","rgba(20,83,45,.30)"],fx:"fireflies",fc:"#e8f99a"},
+ {id:"ocean",name:"Ocean",g:"Nature",v:{...D,bg:"#04121c",accent:"#67e8f9",accent2:"#7dd3fc",good:"#5eead4",warm:"#fde68a"},blobs:["rgba(14,116,144,.35)","rgba(30,64,175,.25)",null],fx:"waves",fc:"103,232,249"},
+ {id:"snow",name:"Snowfall",g:"Nature",v:{...D,bg:"#0d1420",accent:"#bfdbfe",accent2:"#c7d2fe",good:"#99f6e4",warm:"#fde68a"},blobs:["rgba(148,163,184,.22)","rgba(59,130,246,.15)",null],fx:"snow",fc:"rgba(255,255,255,.8)"},
+ {id:"sakura",name:"Sakura",g:"Nature",v:{...D,bg:"#150b10",accent:"#f9a8d4",accent2:"#fda4af",good:"#86efac",warm:"#fcd34d"},blobs:["rgba(236,72,153,.22)","rgba(190,18,60,.15)",null],fx:"petals",fc:["#f9a8d4","#fbcfe8","#fda4af"]},
+ {id:"autumn",name:"Autumn",g:"Nature",v:{...D,bg:"#140d07",accent:"#fdba74",accent2:"#fca5a5",good:"#bef264",warm:"#fbbf24"},blobs:["rgba(194,65,12,.25)","rgba(161,98,7,.22)",null],fx:"petals",fc:["#ea580c","#f59e0b","#b91c1c","#d97706"]},
+ {id:"desert",name:"Desert dusk",g:"Nature",v:{...D,bg:"#1a0f0c",accent:"#fdba74",accent2:"#f9a8d4",good:"#86efac",warm:"#fdba74"},blobs:["rgba(234,88,12,.28)","rgba(190,24,93,.20)","rgba(251,191,36,.12)"],fx:"dust",fc:"255,210,170"},
+ {id:"sunset",name:"Sunset",g:"Nature",v:{...D,bg:"#140a12",accent:"#fdba74",accent2:"#c4b5fd",good:"#86efac",warm:"#fcd34d"},blobs:["rgba(249,115,22,.30)","rgba(168,85,247,.28)","rgba(236,72,153,.20)"],fx:"none"},
+ {id:"mist",name:"Morning mist",g:"Nature",light:1,v:{...L,bg:"#edf1ed",text:"#17211b",accent:"#15803d",accent2:"#0e7490",good:"#15803d",warm:"#a16207"},blobs:["rgba(187,247,208,.55)","rgba(186,230,253,.5)","rgba(254,240,138,.25)"],fx:"dust",fc:"60,90,70"},
+ {id:"graphite",name:"Graphite",g:"Solid",v:{...D,bg:"#16181c",card:"rgba(255,255,255,.045)",accent:"#e4e4e7",accent2:"#a1a1aa",good:"#86efac",warm:"#fcd34d"},blobs:null,fx:"none"},
+ {id:"black",name:"Pure black",g:"Solid",v:{...D,bg:"#000000",card:"rgba(255,255,255,.06)",accent:"#ffffff",accent2:"#a3a3a3",good:"#86efac",warm:"#fcd34d"},blobs:null,fx:"none"},
+ {id:"navy",name:"Navy",g:"Solid",v:{...D,bg:"#0f1b2d",card:"rgba(255,255,255,.05)",accent:"#93c5fd",accent2:"#c4b5fd",good:"#5eead4",warm:"#fcd34d"},blobs:null,fx:"none"},
+ {id:"paper",name:"Paper",g:"Solid",light:1,v:{...L,bg:"#f4f2ee",card:"rgba(255,255,255,.85)",line:"rgba(0,0,0,.07)",text:"#1a1a1a",dim:"#6b6b6b",faint:"#a3a3a3",accent:"#1a1a1a",accent2:"#737373",good:"#15803d",warm:"#b45309"},blobs:null,fx:"none"},
+ {id:"sage",name:"Sage",g:"Solid",light:1,v:{...L,bg:"#e1e7dd",card:"rgba(255,255,255,.55)",text:"#1f2a1f",dim:"#5c6b5c",accent:"#3f6212",accent2:"#0f766e",good:"#15803d",warm:"#a16207"},blobs:null,fx:"none"}
+];
+
+/* ============ Data ============ */
+const DEFAULT = {
+  updated: 0, name: "Korey", place: "Haddonfield", lat: 39.8915, lon: -75.0377,
+  theme: "midnight", nightStart: 22, nightEnd: 6,
+  schoolDays: [1,2,3,4,5],
+  classes: [
+    {name:"Period 1 · Math",start:"07:50",end:"08:38",room:""},
+    {name:"Period 2 · English",start:"08:42",end:"09:30",room:""},
+    {name:"Period 3 · Computer science",start:"09:34",end:"10:22",room:""},
+    {name:"Period 4 · Science",start:"10:26",end:"11:14",room:""},
+    {name:"Lunch",start:"11:18",end:"11:48",room:""},
+    {name:"Period 5 · History",start:"11:52",end:"12:40",room:""},
+    {name:"Period 6 · Spanish",start:"12:44",end:"13:32",room:""},
+    {name:"Period 7 · Engineering",start:"13:36",end:"14:24",room:""}
+  ],
+  biz: { title:"AI receptionist", focus:"Get the first gym on a free trial", week:"",
+    goals:[{t:"List 20 local gyms to reach out to"},{t:"Tailor the chatbot demo for gyms"},{t:"Send 5 outreach messages"},{t:"Check in with landscaping trials"},{t:"Write down one bigger business idea"}] },
+  todos: [{t:"Put my real class schedule in"},{t:"Measure the iPad and the wall spot"},{t:"Set up phone sync"}],
+  quotes: ["Build things people want.","Small progress every day adds up.","Done is better than perfect. Ship it, then improve it.",
+    "The best way to predict the future is to build it.","Talk to customers. Then talk to more customers.","Make it work, make it right, make it fast."]
+};
+const clone = o => JSON.parse(JSON.stringify(o));
+function load(){
+  let s; try { s = JSON.parse(localStorage.getItem("dash-v2")); } catch(e) {}
+  return Object.assign(clone(DEFAULT), s || {});
+}
+let S = load();
+let SYNC = (()=>{ try { return JSON.parse(localStorage.getItem("dash-sync")) || {}; } catch(e){ return {}; } })();
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const pad = n => (n < 10 ? "0" : "") + n;
+const toMin = s => { const p = String(s||"0:0").split(":"); return (+p[0])*60 + (+p[1]||0); };
+const fmt12 = m => { let h = Math.floor(m/60), mm = m%60, ap = h >= 12 ? "PM" : "AM"; h = h%12 || 12; return h + ":" + pad(mm) + " " + ap; };
+const dur = m => m < 60 ? m + " min" : Math.floor(m/60) + " hr" + (m%60 ? " " + (m%60) + " min" : "");
+
+let pushTimer = null;
+function save(skipRender){
+  S.updated = Date.now();
+  try { localStorage.setItem("dash-v2", JSON.stringify(S)); } catch(e) {}
+  if (!skipRender) renderCards();
+  clearTimeout(pushTimer); pushTimer = setTimeout(push, 900);
+}
+function getPath(path){ return path.split(".").reduce((o,k)=>o[k], S); }
+function setPath(path, val){ const k = path.split("."); const last = k.pop(); k.reduce((o,x)=>o[x], S)[last] = val; }
+
+/* ============ Theme + background effects ============ */
+let theme = THEMES[0];
+function applyTheme(){
+  theme = THEMES.find(t => t.id === S.theme) || THEMES[0];
+  const r = document.documentElement.style;
+  Object.keys(theme.v).forEach(k => r.setProperty("--" + k, theme.v[k]));
+  const b = theme.blobs || [];
+  ["b1","b2","b3"].forEach((id,i) => { $(id).style.background = b[i] ? "radial-gradient(circle," + b[i] + ",transparent 65%)" : "transparent"; });
+  document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').content = theme.light ? "default" : "black-translucent";
+  initFx();
+}
+
+const cv = $("fx"), cx = cv.getContext("2d");
+let W = 0, H = 0, P = [], flash = 0, shoot = null, last = 0;
+function sizeFx(){ const d = Math.min(window.devicePixelRatio || 1, 1.5); W = innerWidth; H = innerHeight; cv.width = W*d; cv.height = H*d; cx.setTransform(d,0,0,d,0,0); initFx(); }
+const rnd = (a,b) => a + Math.random()*(b-a);
+function spawn(t, init){
+  switch(t){
+    case "stars": return {x:rnd(0,W),y:rnd(0,H),r:rnd(.4,1.3),ph:rnd(0,6.3),sp:rnd(.0006,.002)};
+    case "starfield": return {x:rnd(-1,1),y:rnd(-1,1),z:init?rnd(.1,1):1};
+    case "rain": case "storm": return {x:rnd(-50,W),y:init?rnd(0,H):rnd(-H*.3,0),l:rnd(10,22),v:rnd(7,12)};
+    case "snow": return {x:rnd(0,W),y:init?rnd(0,H):-5,r:rnd(1,3),v:rnd(.3,.9),ph:rnd(0,6.3)};
+    case "fireflies": return {x:rnd(0,W),y:rnd(H*.3,H),vx:rnd(-.3,.3),vy:rnd(-.3,.3),ph:rnd(0,6.3)};
+    case "petals": return {x:rnd(0,W),y:init?rnd(0,H):-12,v:rnd(.5,1.1),rot:rnd(0,6.3),vr:rnd(-.02,.02),s:rnd(4,7),ph:rnd(0,6.3),c:theme.fc[Math.floor(Math.random()*theme.fc.length)]};
+    case "dust": return {x:rnd(0,W),y:rnd(0,H),r:rnd(.6,1.8),vx:rnd(.05,.25),vy:rnd(-.12,.02),ph:rnd(0,6.3)};
+  }
+}
+function initFx(){
+  if (!W) return;
+  const n = {stars:110,starfield:220,rain:130,storm:160,snow:90,fireflies:26,petals:24,dust:60}[theme.fx] || 0;
+  P = []; for (let i = 0; i < n; i++) P.push(spawn(theme.fx, true));
+  cx.clearRect(0,0,W,H);
+}
+function frame(t){
+  requestAnimationFrame(frame);
+  if (t - last < 33 || document.hidden) return; last = t;
+  const f = theme.fx; if (f === "none") return;
+  cx.clearRect(0,0,W,H);
+  const light = theme.light;
+  if (f === "stars"){
+    for (const p of P){ cx.globalAlpha = .15 + .65*(.5+.5*Math.sin(t*p.sp+p.ph)); cx.fillStyle = "#fff"; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,6.3); cx.fill(); }
+    if (!shoot && Math.random() < .003) shoot = {x:rnd(W*.2,W),y:rnd(0,H*.4),l:0};
+    if (shoot){ shoot.l += 14; const a = Math.max(0,1-shoot.l/500); cx.globalAlpha = a*.8; cx.strokeStyle = "#fff"; cx.lineWidth = 1.2;
+      cx.beginPath(); cx.moveTo(shoot.x - shoot.l, shoot.y + shoot.l*.45); cx.lineTo(shoot.x - shoot.l + 60, shoot.y + shoot.l*.45 - 27); cx.stroke(); if (a <= 0) shoot = null; }
+  } else if (f === "starfield"){
+    cx.fillStyle = "#fff";
+    for (const p of P){ p.z -= .0016; if (p.z <= .02) Object.assign(p, spawn(f,false));
+      const sx = W/2 + p.x/p.z*W*.25, sy = H/2 + p.y/p.z*H*.25;
+      if (sx < 0 || sx > W || sy < 0 || sy > H){ Object.assign(p, spawn(f,false)); continue; }
+      cx.globalAlpha = Math.min(1,(1-p.z)*1.1); cx.beginPath(); cx.arc(sx,sy,Math.max(.3,(1-p.z)*1.8),0,6.3); cx.fill(); }
+  } else if (f === "rain" || f === "storm"){
+    cx.strokeStyle = theme.fc; cx.lineWidth = 1; cx.globalAlpha = 1; cx.beginPath();
+    for (const p of P){ cx.moveTo(p.x,p.y); cx.lineTo(p.x+p.l*.18,p.y+p.l); p.y += p.v; p.x += p.v*.18; if (p.y > H) Object.assign(p, spawn(f,false)); }
+    cx.stroke();
+    if (f === "storm"){ if (Math.random() < .0015) flash = 1; if (flash > 0){ cx.globalAlpha = flash*.16; cx.fillStyle = "#dfe6ff"; cx.fillRect(0,0,W,H); flash -= .06; } }
+  } else if (f === "snow"){
+    cx.fillStyle = theme.fc;
+    for (const p of P){ p.y += p.v; p.x += Math.sin(t/1400+p.ph)*.35; if (p.y > H+5) Object.assign(p, spawn(f,false));
+      cx.globalAlpha = .4 + p.r/6; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,6.3); cx.fill(); }
+  } else if (f === "fireflies"){
+    cx.fillStyle = theme.fc;
+    for (const p of P){ p.vx += rnd(-.03,.03); p.vy += rnd(-.03,.03); p.vx *= .98; p.vy *= .98; p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0; if (p.y < H*.15) p.vy += .05; if (p.y > H) p.vy -= .05;
+      const a = Math.max(0, Math.sin(t/900+p.ph)); cx.globalAlpha = a*.12; cx.beginPath(); cx.arc(p.x,p.y,9,0,6.3); cx.fill();
+      cx.globalAlpha = a*.9; cx.beginPath(); cx.arc(p.x,p.y,1.8,0,6.3); cx.fill(); }
+  } else if (f === "petals"){
+    for (const p of P){ p.y += p.v; p.x += Math.sin(t/1600+p.ph)*.6 + .25; p.rot += p.vr; if (p.y > H+12 || p.x > W+12) Object.assign(p, spawn(f,false));
+      cx.save(); cx.translate(p.x,p.y); cx.rotate(p.rot); cx.scale(1, .45 + .4*Math.abs(Math.sin(t/700+p.ph)));
+      cx.globalAlpha = .7; cx.fillStyle = p.c; cx.beginPath(); cx.ellipse(0,0,p.s,p.s*.6,0,0,6.3); cx.fill(); cx.restore(); }
+  } else if (f === "dust"){
+    for (const p of P){ p.x += p.vx; p.y += p.vy; if (p.x > W) p.x = 0; if (p.y < 0) p.y = H;
+      cx.globalAlpha = (light ? .25 : .35)*(.5+.5*Math.sin(t/1500+p.ph)); cx.fillStyle = "rgb(" + theme.fc + ")"; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,6.3); cx.fill(); }
+  } else if (f === "waves"){
+    for (let k = 0; k < 3; k++){
+      cx.globalAlpha = 1; cx.fillStyle = "rgba(" + theme.fc + "," + (.05 + k*.03) + ")"; cx.beginPath(); cx.moveTo(0,H);
+      const base = H*(.80 + k*.05), amp = 10 + k*4, sp = t/(2600 - k*500);
+      for (let x = 0; x <= W; x += 16) cx.lineTo(x, base + Math.sin(x/(170+k*40) + sp + k)*amp + Math.sin(x/90 - sp*1.3)*amp*.3);
+      cx.lineTo(W,H); cx.fill();
+    }
+  }
+  cx.globalAlpha = 1;
+}
+
+/* ============ Cards ============ */
+function tickClock(){
+  const d = new Date(), h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
+  $("time").innerHTML = (h%12 || 12) + ":" + pad(m) + '<span class="ap">' + (h >= 12 ? "PM" : "AM") + "</span>";
+  $("date").textContent = DAYS[d.getDay()] + ", " + MONTHS[d.getMonth()] + " " + d.getDate();
+  $("sec").style.width = ((s+1)/60*100) + "%";
+  $("greet").innerHTML = (h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening") + ", <b>" + esc(S.name) + "</b>";
+  const a = +S.nightStart, b = +S.nightEnd;
+  const night = a === b ? false : a > b ? (h >= a || h < b) : (h >= a && h < b);
+  $("night").style.opacity = night && !$("modal").classList.contains("open") ? .6 : 0;
+}
+
+let schedKey = "";
+function tickSchedule(force){
+  const d = new Date(), dow = d.getDay(), now = d.getHours()*60 + d.getMinutes() + d.getSeconds()/60;
+  $("dayname").textContent = DAYS[dow];
+  const list = $("list"), status = $("status");
+  const c = S.classes.slice().sort((x,y) => toMin(x.start) - toMin(y.start));
+  if (S.schoolDays.indexOf(dow) === -1 || !c.length){
+    if (schedKey !== "free" || force){ list.innerHTML = '<div class="free"><div>🌤️</div>No school today.<br>Good day to build something.</div>'; schedKey = "free"; }
+    status.innerHTML = ""; return;
+  }
+  let cur = -1, next = -1;
+  c.forEach((x,i) => { const a = toMin(x.start), b = toMin(x.end); if (now >= a && now < b) cur = i; if (next === -1 && now < a) next = i; });
+  const first = toMin(c[0].start), lastEnd = toMin(c[c.length-1].end);
+  if (cur > -1) status.innerHTML = esc(c[cur].name) + "<small>Ends in " + dur(Math.ceil(toMin(c[cur].end) - now)) + (next > -1 ? " · Next: " + esc(c[next].name) : "") + "</small>";
+  else if (now < first) status.innerHTML = "School starts at " + fmt12(first) + "<small>First up: " + esc(c[0].name) + " in " + dur(Math.ceil(first - now)) + "</small>";
+  else if (now >= lastEnd) status.innerHTML = "School's out<small>Time for homework, the business and projects</small>";
+  else if (next > -1) status.innerHTML = "Passing time<small>" + esc(c[next].name) + " starts in " + dur(Math.ceil(toMin(c[next].start) - now)) + "</small>";
+  const key = cur + "|" + next + "|" + (now >= lastEnd);
+  if (key !== schedKey || force){
+    list.innerHTML = c.map((x,j) => {
+      const cls = j === cur ? "now" : (toMin(x.end) <= now ? "done" : (j === next ? "next" : ""));
+      return '<div class="row ' + cls + '">' + (j === cur ? '<div class="fill" id="fill"></div><div class="shimmer"></div>' : "") +
+        '<div class="t">' + fmt12(toMin(x.start)).replace(" "," ") + '</div><div class="n">' + esc(x.name) + '</div>' +
+        (x.room ? '<div class="r">' + esc(x.room) + '</div>' : "") + '</div>';
+    }).join("");
+    schedKey = key;
+  }
+  if (cur > -1 && $("fill")){ const A = toMin(c[cur].start), B = toMin(c[cur].end); $("fill").style.width = ((now-A)/(B-A)*100).toFixed(1) + "%"; }
+}
+
+function weekKey(){ const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay()+6)%7)); return d.toISOString().slice(0,10); }
+function checkWeek(){ if (S.biz.week !== weekKey()){ S.biz.goals.forEach(g => g.done = false); S.biz.week = weekKey(); save(true); } }
+
+function checksHTML(arr, path, addLabel){
+  let h = arr.map((g,i) => '<div class="ck' + (g.done ? " ok" : "") + '" data-tog="' + path + '.' + i + '"><div class="box"></div><span>' + esc(g.t) + '</span></div>').join("");
+  if (!arr.length) h = '<div class="empty">Nothing here yet</div>';
+  return h + '<div class="addrow" data-add="' + path + '"><b>+</b>' + addLabel + '</div>';
+}
+function renderCards(){
+  checkWeek();
+  const b = S.biz;
+  $("btitle").textContent = b.title || "Business";
+  $("focus").innerHTML = b.focus ? "<small>Main focus</small>" + esc(b.focus) : "";
+  $("goals").innerHTML = checksHTML(b.goals, "biz.goals", "Add a goal");
+  const n = b.goals.filter(g => g.done).length;
+  $("pbar").style.width = (b.goals.length ? n/b.goals.length*100 : 0) + "%";
+  $("ptext").textContent = n + " of " + b.goals.length + " done";
+  $("todos").innerHTML = checksHTML(S.todos, "todos", "Add a to-do");
+  tickClock(); tickSchedule(true); renderWeather();
+}
+
+let qi = Math.floor(Math.random()*100);
+function nextQuote(){
+  const q = $("quote"), list = S.quotes.filter(x => x.trim());
+  if (!list.length){ q.textContent = ""; return; }
+  q.style.opacity = 0;
+  setTimeout(() => { q.textContent = "“" + list[qi % list.length] + "”"; qi++; q.style.opacity = 1; }, 900);
+}
+
+/* ============ Weather ============ */
+const WX = {0:["☀️","Clear"],1:["🌤️","Mostly clear"],2:["⛅","Partly cloudy"],3:["☁️","Cloudy"],45:["🌫️","Fog"],48:["🌫️","Freezing fog"],
+  51:["🌦️","Light drizzle"],53:["🌦️","Drizzle"],55:["🌧️","Heavy drizzle"],56:["🌧️","Freezing drizzle"],57:["🌧️","Freezing drizzle"],
+  61:["🌧️","Light rain"],63:["🌧️","Rain"],65:["🌧️","Heavy rain"],66:["🌨️","Freezing rain"],67:["🌨️","Freezing rain"],
+  71:["🌨️","Light snow"],73:["🌨️","Snow"],75:["❄️","Heavy snow"],77:["❄️","Snow grains"],80:["🌦️","Showers"],81:["🌧️","Showers"],
+  82:["⛈️","Heavy showers"],85:["🌨️","Snow showers"],86:["❄️","Snow showers"],95:["⛈️","Thunderstorm"],96:["⛈️","Thunderstorm"],99:["⛈️","Thunderstorm"]};
+const wx = c => WX[c] || ["🌡️",""];
+let WD = null, wxErr = "";
+function hourLabel(s){ const h = +s.slice(11,13); return (h%12 || 12) + (h >= 12 ? "p" : "a"); }
+function hourStart(){ if (!WD) return 0; const h = WD.hourly.time, now = WD.current.time.slice(0,13); const i = h.findIndex(x => x.slice(0,13) >= now); return i < 0 ? 0 : i; }
+function loadWeather(){
+  const u = "https://api.open-meteo.com/v1/forecast?latitude=" + S.lat + "&longitude=" + S.lon +
+    "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m,is_day" +
+    "&hourly=temperature_2m,weather_code,precipitation_probability" +
+    "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset" +
+    "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=7";
+  fetch(u).then(r => r.json()).then(j => { WD = j; wxErr = ""; renderWeather(); if (modalKind === "weather") openModal("weather"); })
+    .catch(() => { wxErr = "No connection"; renderWeather(); });
+}
+function renderWeather(){
+  $("place").textContent = S.place || "Weather";
+  if (!WD){ $("wdesc").textContent = wxErr || "Loading…"; return; }
+  const cu = WD.current, w = wx(cu.weather_code), dy = WD.daily;
+  $("wicon").textContent = (cu.is_day === 0 && cu.weather_code <= 1) ? "🌙" : w[0];
+  $("wtemp").textContent = Math.round(cu.temperature_2m) + "°";
+  $("wdesc").textContent = w[1] + " · feels " + Math.round(cu.apparent_temperature) + "°";
+  $("wmeta").innerHTML = "<span>H " + Math.round(dy.temperature_2m_max[0]) + "° · L " + Math.round(dy.temperature_2m_min[0]) + "°</span><span>💧 " +
+    dy.precipitation_probability_max[0] + "%</span><span>💨 " + Math.round(cu.wind_speed_10m) + " mph</span>";
+  const h = WD.hourly, s = hourStart(); let html = "";
+  for (let k = 1; k <= 5; k++){ const i = s + k*2; if (i >= h.time.length) break;
+    html += '<div class="hr">' + hourLabel(h.time[i]) + '<div>' + wx(h.weather_code[i])[0] + '</div><span>' + Math.round(h.temperature_2m[i]) + '°</span></div>'; }
+  $("hours").innerHTML = html;
+}
+
+/* ============ Modals ============ */
+let modalKind = "", settingsTab = "themes", locResults = [];
+function openModal(kind, opt){
+  modalKind = kind;
+  const sh = $("sheet"); const top = sh.scrollTop;
+  sh.innerHTML = ({weather:mWeather, schedule:mSchedule, business:mBusiness, todos:mTodos, settings:mSettings})[kind]();
+  $("modal").classList.add("open"); tickClock();
+  sh.scrollTop = opt === "keep" ? top : 0;
+  if (opt === "focusAdd"){ const a = sh.querySelector(".addinp"); if (a) setTimeout(() => a.focus(), 50); }
+}
+function closeModal(){ $("modal").classList.remove("open"); modalKind = ""; renderCards(); tickClock(); }
+const head = t => '<div class="sh"><h2>' + t + '</h2><button class="pri" data-act="close">Done</button></div>';
+
+function mWeather(){
+  if (!WD) return head("Weather") + '<p class="hint">' + (wxErr || "Loading…") + "</p>";
+  const h = WD.hourly, s = hourStart(), d = WD.daily;
+  let hrs = ""; for (let i = s; i < Math.min(s+24, h.time.length); i++)
+    hrs += '<div class="hcell">' + (i === s ? "Now" : hourLabel(h.time[i])) + '<div>' + wx(h.weather_code[i])[0] + '</div><span>' + Math.round(h.temperature_2m[i]) + '°</span><br><small style="color:var(--accent)">' + (h.precipitation_probability[i] || 0) + '%</small></div>';
+  const lo = Math.min(...d.temperature_2m_min), hi = Math.max(...d.temperature_2m_max), rng = Math.max(1, hi - lo);
+  let days = d.time.map((t,i) => {
+    const name = i === 0 ? "Today" : DAYS[new Date(t + "T12:00").getDay()].slice(0,3);
+    const a = (d.temperature_2m_min[i]-lo)/rng*100, b = (d.temperature_2m_max[i]-lo)/rng*100;
+    return '<div class="drow"><div class="dn">' + name + '</div><div class="di">' + wx(d.weather_code[i])[0] + '</div><div class="dp">💧' + d.precipitation_probability_max[i] + '%</div>' +
+      '<div class="lo">' + Math.round(d.temperature_2m_min[i]) + '°</div><div class="rbar"><i style="left:' + a + '%;right:' + (100-b) + '%"></i></div><div class="hi">' + Math.round(d.temperature_2m_max[i]) + '°</div></div>';
+  }).join("");
+  const sr = d.sunrise[0].slice(11), ss = d.sunset[0].slice(11);
+  return head(esc(S.place) + " weather") + '<div class="sub">Next 24 hours</div><div class="hscroll">' + hrs + '</div>' +
+    '<div class="sub">7 days</div>' + days +
+    '<div class="sub">Today</div><p class="hint">Sunrise ' + fmt12(toMin(sr)) + ' · Sunset ' + fmt12(toMin(ss)) + ' · Humidity ' + WD.current.relative_humidity_2m + '%</p>' +
+    '<p class="hint" style="margin-top:10px">Change the location in Settings → General.</p>';
+}
+function mSchedule(){
+  const days = [1,2,3,4,5,6,0].map(d => '<button data-act="day" data-d="' + d + '" class="' + (S.schoolDays.indexOf(d) > -1 ? "on" : "") + '">' + DAYS[d].slice(0,3) + '</button>').join("");
+  const rows = S.classes.map((c,i) => '<div class="erow cls"><input class="nm" data-bind="classes.' + i + '.name" value="' + esc(c.name) + '" placeholder="Class name">' +
+    '<input class="tm" type="time" data-bind="classes.' + i + '.start" value="' + esc(c.start) + '"><input class="tm" type="time" data-bind="classes.' + i + '.end" value="' + esc(c.end) + '">' +
+    '<input class="rm" data-bind="classes.' + i + '.room" value="' + esc(c.room) + '" placeholder="Room"><button class="x" data-act="del" data-path="classes" data-i="' + i + '">✕</button></div>').join("");
+  return head("School schedule") + '<div class="sub">School days</div><div class="days">' + days + '</div>' +
+    '<div class="sub">Classes · name, start, end, room</div>' + rows +
+    '<div class="btns"><button data-act="addclass">+ Add class</button><button data-act="sortclass">Sort by time</button></div>';
+}
+function listEditor(path, ph){
+  const arr = getPath(path);
+  return arr.map((g,i) => '<div class="erow"><input data-bind="' + path + '.' + i + '.t" value="' + esc(g.t) + '"><button class="x" data-act="del" data-path="' + path + '" data-i="' + i + '">✕</button></div>').join("") +
+    '<div class="erow"><input class="addinp" data-addto="' + path + '" placeholder="' + ph + '"><button data-act="add" data-path="' + path + '">Add</button></div>';
+}
+function mBusiness(){
+  return head("Business board") + '<div class="sub">Title</div><input data-bind="biz.title" value="' + esc(S.biz.title) + '">' +
+    '<div class="sub">Main focus</div><input data-bind="biz.focus" value="' + esc(S.biz.focus) + '" placeholder="The one thing that matters most right now">' +
+    '<div class="sub">This week’s goals</div>' + listEditor("biz.goals", "Add a goal") +
+    '<div class="btns"><button data-act="uncheck" data-path="biz.goals">Uncheck all</button></div>';
+}
+function mTodos(){
+  return head("To-do") + listEditor("todos", "Add a to-do") +
+    '<div class="btns"><button data-act="cleardone" data-path="todos">Clear finished</button></div>';
+}
+function mSettings(){
+  const tabs = '<div class="tabs">' + [["themes","Themes"],["general","General"],["sync","Phone sync"]].map(t =>
+    '<button data-act="tab" data-tab="' + t[0] + '" class="' + (settingsTab === t[0] ? "on" : "") + '">' + t[1] + '</button>').join("") + '</div>';
+  let body = "";
+  if (settingsTab === "themes"){
+    ["Space","Rain","Nature","Solid"].forEach(g => {
+      body += '<div class="sub">' + g + '</div><div class="themes">' + THEMES.filter(t => t.g === g).map(t => {
+        const b = t.blobs || [];
+        return '<button class="th' + (S.theme === t.id ? " on" : "") + '" data-act="theme" data-id="' + t.id + '"><div class="sw" style="background:' + t.v.bg + '">' +
+          (b[0] ? '<i style="background:' + b[0] + ';left:-20px;top:-30px"></i>' : "") + (b[1] ? '<i style="background:' + b[1] + ';right:-30px;bottom:-40px"></i>' : "") +
+          '<u style="background:' + t.v.card + ';border:1px solid ' + t.v.line + '"></u><s style="background:' + t.v.accent + '"></s></div>' +
+          '<div class="nm" style="background:' + t.v.bg + ';color:' + t.v.text + '">' + t.name + '</div></button>';
+      }).join("") + '</div>';
+    });
+  } else if (settingsTab === "general"){
+    const hours = sel => Array.from({length:24}, (_,h) => '<option value="' + h + '"' + (+sel === h ? " selected" : "") + '>' + fmt12(h*60) + '</option>').join("");
+    body = '<div class="sub">Your name</div><input data-bind="name" value="' + esc(S.name) + '">' +
+      '<div class="sub">Weather location · now ' + esc(S.place) + '</div><div class="erow"><input id="locq" placeholder="Search a town or city"><button data-act="locsearch">Search</button></div>' +
+      '<div class="res">' + locResults.map((r,i) => '<button data-act="locpick" data-i="' + i + '">' + esc(r.name) + ', ' + esc(r.admin1 || "") + ' ' + esc(r.country_code || "") + '</button>').join("") + '</div>' +
+      '<div class="sub">Dim the screen at night</div><div class="row2"><div><div class="hint">From</div><select data-bind="nightStart" data-num="1">' + hours(S.nightStart) + '</select></div>' +
+      '<div><div class="hint">Until</div><select data-bind="nightEnd" data-num="1">' + hours(S.nightEnd) + '</select></div></div>' +
+      '<p class="hint" style="margin-top:6px">Set both to the same time to turn dimming off.</p>' +
+      '<div class="sub">Quotes · one per line</div><textarea rows="6" data-bind="quotesText">' + esc(S.quotes.join("\n")) + '</textarea>';
+  } else {
+    body = '<p class="hint" style="margin-top:14px">Connect a free Google Sheet so this dashboard and your phone share the same goals, to-dos, schedule and theme. Then open this same page on your phone and edit it there.</p>' +
+      '<div class="sub">Sync link</div><input data-sync="url" value="' + esc(SYNC.url || "") + '" placeholder="https://script.google.com/macros/s/…/exec">' +
+      '<div class="sub">Secret word</div><input data-sync="key" value="' + esc(SYNC.key || "") + '" placeholder="Same word you put in the script">' +
+      '<div class="btns"><button class="pri" data-act="syncnow">Connect and sync</button><button data-act="copyscript">Copy the script</button></div>' +
+      '<p class="hint" id="syncmsg" style="margin-top:10px">' + esc(syncMsg) + '</p>' +
+      '<div class="sub">One-time setup (do this on a computer)</div><div class="hint"><ol>' +
+      '<li>Create a new Google Sheet. Name it anything, like <code>Dashboard data</code>.</li>' +
+      '<li>In the Sheet, go to Extensions → Apps Script. Delete what’s there and paste the script (use “Copy the script” above, or the <code>sync-script.gs</code> file).</li>' +
+      '<li>Change <code>KEY</code> at the top of the script to your own secret word. Save.</li>' +
+      '<li>Click Deploy → New deployment → type: Web app. Set “Execute as” to <b>Me</b> and “Who has access” to <b>Anyone</b>. Deploy and allow access.</li>' +
+      '<li>Copy the Web app URL. Paste it and your secret word here, on the iPad and on your phone, then tap Connect.</li></ol></div>';
+  }
+  return head("Settings") + tabs + body;
+}
+
+const SCRIPT = `// Dashboard sync — paste into Extensions → Apps Script of a Google Sheet
+const KEY = 'change-this-secret-word';
+
+function doGet(e) {
+  if (!e.parameter.key || e.parameter.key !== KEY) return out({ error: 'Wrong secret word' });
+  const v = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0].getRange('A1').getValue();
+  return out({ data: v ? JSON.parse(v) : null });
+}
+
+function doPost(e) {
+  const body = JSON.parse(e.postData.contents);
+  if (body.key !== KEY) return out({ error: 'Wrong secret word' });
+  const lock = LockService.getScriptLock(); lock.waitLock(5000);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  const cur = sheet.getRange('A1').getValue();
+  const curData = cur ? JSON.parse(cur) : null;
+  if (!curData || (body.data.updated || 0) >= (curData.updated || 0)) {
+    sheet.getRange('A1').setValue(JSON.stringify(body.data));
+    sheet.getRange('A2').setValue('Last saved: ' + new Date());
+  }
+  lock.releaseLock();
+  return out({ ok: true });
+}
+
+function out(o) {
+  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+/* ============ Sync ============ */
+let syncMsg = "", syncBusy = false;
+function setSync(state, msg){
+  $("syncdot").style.background = state === "ok" ? "var(--good)" : state === "err" ? "#f87171" : "transparent";
+  if (state === "ok") setTimeout(() => $("syncdot").style.background = "transparent", 1500);
+  if (msg){ syncMsg = msg; const m = $("syncmsg"); if (m) m.textContent = msg; }
+}
+function push(){
+  if (!SYNC.url || !SYNC.key) return;
+  fetch(SYNC.url, {method:"POST", body: JSON.stringify({key: SYNC.key, data: S})})
+    .then(r => r.json()).then(o => o.error ? setSync("err", o.error) : setSync("ok", "Synced " + new Date().toLocaleTimeString()))
+    .catch(() => setSync("err", "Couldn’t reach the sync link"));
+}
+function pull(manual){
+  if (!SYNC.url || !SYNC.key || syncBusy) return;
+  if (!manual && modalKind && modalKind !== "weather") return;
+  syncBusy = true;
+  fetch(SYNC.url + (SYNC.url.indexOf("?") > -1 ? "&" : "?") + "key=" + encodeURIComponent(SYNC.key))
+    .then(r => r.json()).then(o => {
+      syncBusy = false;
+      if (o.error){ setSync("err", o.error); return; }
+      if (o.data && (o.data.updated || 0) > (S.updated || 0)){
+        const oldLoc = S.lat + "," + S.lon;
+        S = Object.assign(clone(DEFAULT), o.data);
+        try { localStorage.setItem("dash-v2", JSON.stringify(S)); } catch(e) {}
+        applyTheme(); renderCards();
+        if (S.lat + "," + S.lon !== oldLoc) loadWeather();
+        if (modalKind) openModal(modalKind, "keep");
+        setSync("ok", "Synced " + new Date().toLocaleTimeString());
+      } else if (!o.data || (o.data.updated || 0) < (S.updated || 0)) push();
+      else setSync("ok", "Up to date " + new Date().toLocaleTimeString());
+    }).catch(() => { syncBusy = false; setSync("err", "Couldn’t reach the sync link. Check the URL and that access is set to Anyone."); });
+}
+
+/* ============ Events ============ */
+document.addEventListener("click", e => {
+  const tog = e.target.closest("[data-tog]");
+  if (tog && !modalKind){
+    const p = tog.getAttribute("data-tog"), item = getPath(p);
+    item.done = !item.done; save();
+    const el = document.querySelector('[data-tog="' + p + '"]'); if (el && item.done) el.classList.add("pop");
+    return;
+  }
+  const add = e.target.closest("[data-add]");
+  if (add && !modalKind){ openModal(add.getAttribute("data-add") === "todos" ? "todos" : "business", "focusAdd"); return; }
+  const card = e.target.closest("[data-open]");
+  if (card && !modalKind){ openModal(card.getAttribute("data-open")); return; }
+  if (e.target.id === "modal"){ closeModal(); return; }
+  const btn = e.target.closest("[data-act]"); if (!btn) return;
+  const act = btn.getAttribute("data-act"), path = btn.getAttribute("data-path"), i = +btn.getAttribute("data-i");
+  switch(act){
+    case "close": closeModal(); break;
+    case "tab": settingsTab = btn.getAttribute("data-tab"); openModal("settings"); break;
+    case "theme": S.theme = btn.getAttribute("data-id"); applyTheme(); save(); openModal("settings","keep"); break;
+    case "del": getPath(path).splice(i,1); save(); openModal(modalKind,"keep"); break;
+    case "add": { const inp = document.querySelector('[data-addto="' + path + '"]'); addItem(path, inp.value); break; }
+    case "uncheck": getPath(path).forEach(g => g.done = false); save(); break;
+    case "cleardone": setPath(path, getPath(path).filter(g => !g.done)); save(); openModal(modalKind,"keep"); break;
+    case "day": { const d = +btn.getAttribute("data-d"), k = S.schoolDays.indexOf(d); k > -1 ? S.schoolDays.splice(k,1) : S.schoolDays.push(d); save(); openModal("schedule","keep"); break; }
+    case "addclass": { const lastC = S.classes[S.classes.length-1]; const st = lastC ? toMin(lastC.end) + 4 : 480;
+      S.classes.push({name:"", start: pad(Math.floor(st/60)%24) + ":" + pad(st%60), end: pad(Math.floor((st+48)/60)%24) + ":" + pad((st+48)%60), room:""});
+      save(); openModal("schedule","keep"); const ins = document.querySelectorAll(".erow.cls input.nm"); ins[ins.length-1].focus(); break; }
+    case "sortclass": S.classes.sort((a,b) => toMin(a.start) - toMin(b.start)); save(); openModal("schedule","keep"); break;
+    case "locsearch": {
+      const q = $("locq").value.trim(); if (!q) return;
+      fetch("https://geocoding-api.open-meteo.com/v1/search?count=6&name=" + encodeURIComponent(q)).then(r => r.json())
+        .then(j => { locResults = j.results || []; openModal("settings","keep"); if (!locResults.length) document.querySelector(".res").innerHTML = '<p class="hint">No places found</p>'; })
+        .catch(() => {}); break; }
+    case "locpick": { const r = locResults[i]; S.place = r.name; S.lat = r.latitude; S.lon = r.longitude; locResults = []; save(); loadWeather(); openModal("settings","keep"); break; }
+    case "syncnow": pull(true); setSync("", "Connecting…"); break;
+    case "copyscript":
+      (navigator.clipboard ? navigator.clipboard.writeText(SCRIPT) : Promise.reject()).then(() => setSync("", "Script copied. Paste it into Apps Script."))
+        .catch(() => setSync("", "Couldn’t copy here. Use the sync-script.gs file instead.")); break;
+  }
+});
+function addItem(path, val){
+  val = (val || "").trim(); if (!val) return;
+  getPath(path).push({t: val}); save(); openModal(modalKind, "keep");
+  const a = document.querySelector('[data-addto="' + path + '"]'); if (a) a.focus();
+}
+document.addEventListener("input", e => {
+  const el = e.target;
+  if (el.hasAttribute("data-sync")){ SYNC[el.getAttribute("data-sync")] = el.value.trim(); try { localStorage.setItem("dash-sync", JSON.stringify(SYNC)); } catch(x) {} return; }
+  const b = el.getAttribute("data-bind"); if (!b) return;
+  if (b === "quotesText") S.quotes = el.value.split("\n").filter(x => x.trim());
+  else setPath(b, el.hasAttribute("data-num") ? +el.value : el.value);
+  save();
+});
+document.addEventListener("change", e => { if (e.target.tagName === "SELECT") e.target.dispatchEvent(new Event("input", {bubbles:true})); });
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  if (e.target.classList.contains("addinp")){ e.preventDefault(); addItem(e.target.getAttribute("data-addto"), e.target.value); }
+  else if (e.target.id === "locq"){ e.preventDefault(); document.querySelector('[data-act="locsearch"]').click(); }
+});
+
+/* ============ Start ============ */
+window.addEventListener("resize", sizeFx);
+applyTheme(); sizeFx(); renderCards(); loadWeather(); nextQuote();
+requestAnimationFrame(frame);
+setInterval(tickClock, 1000);
+setInterval(() => tickSchedule(false), 15000);
+setInterval(loadWeather, 15*60*1000);
+setInterval(nextQuote, 60*1000);
+setInterval(() => { if (!modalKind) checkWeek(); }, 10*60*1000);
+setInterval(() => pull(false), 30*1000);
+pull(false);
+// Reload every 3 hours (only when nothing is open) so updates you upload show up
+setInterval(() => { if (!modalKind) location.reload(); }, 3*60*60*1000);
+</script>
+</body>
+</html>
